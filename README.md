@@ -7,7 +7,7 @@ Installation
 
 You can install this package as usual with pip:
 
-    pip install requirement.txt
+    pip install requirements.txt
 
 Example
 -------
