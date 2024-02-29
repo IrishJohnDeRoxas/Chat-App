@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block content %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+<script type="text/javascript" charset="utf-8">
+    $(document).ready(function(){
+        var socket = io();
+        
+        $(".rooms").click(function(event) {
+            // Get the clicked element's ID using `$(this).attr('id')`
+            var clickedRoomId = $(this).attr('id');
+            msg = {'room_id':clickedRoomId}
+            socket.send(parseInt(msg))
+        });
+
+        socket.on('message', function(data) {
+            console.log(data)
+            $(messages).append($(`<h5>${data['user']}</h5><div class="mb-2 border p-4 container">${data['msg']}</div>`))
+            
+        });
+
+        $('#inputMessage').on('keypress', function(e){
+            if(e.which == 13){
+                if ($('#inputMessage').val()){
+                    $('#inputMessage').focus()
+                    socket.send($('#inputMessage').val())
+                    $('#inputMessage').val('')
+                } 
+            }
+        })
+        $('#send').on('click',function(){
+            $('#inputMessage').focus()
+            if ($('#inputMessage').val()){
+                socket.send($('#inputMessage').val())
+                $('#inputMessage').val('')
+            }            
+        });
+        $('#addRoomBtn').on('click', function(){
+            $('#addRoomForm').toggle()
+        });
+        
+    })
+</script>
+
+<div class="container">
+    <div class="row min-vh-100 bg-light">
+        <!-- Rooms -->
+        <div class="col d-flex flex-column h-auto border-end border-start">
+            Rooms
+            <div class="row mb-3">
+                <div class="input-group rounded">
+                    <input type="search" class="form-control rounded" placeholder="Search" aria-label="Search"
+                        aria-describedby="search-addon" />
+                    <span class="input-group-text border-0" id="search-addon">
+                        <i class="fas fa-search"></i>
+                    </span>
+                </div>
+            </div>
+            {% if rooms %}
+                {% for room in rooms %}
+                    <a href="/chat/{{room.room_id}}" class="text-decoration-none text-body rooms" id="{{room.room_id}}">
+                        <div class="row p-3 border pe-auto">
+                            {{room.room_name}}
+                        </div>
+                    </a>
+                {% endfor %}
+            {% endif %}
+            <div class="add-room  mt-auto mb-3 align-self-end">
+                <button type="button" id="addRoomBtn" class="btn btn-primary" >
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </div>
+            <a name="" id="" class="btn btn-primary mb-3" href="{{url_for('main.logout')}}" role="button">Logout</a>
+        </div>
+
+        <!-- Messages -->
+        <div class="col-8 h-auto border-end">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category,  message in messages %}
+                    <div class="container mt-2">
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            <strong>{{ message }}</strong>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div> 
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            <div id="addRoomForm" class="container" style="display: none;" >
+                <form method="POST">
+                    <div class="mb-3">
+                        {{ create_room_form.hidden_tag() }}
+                        {{create_room_form.room_name.label(class="form-label")}}
+                        {{create_room_form.room_name(class="form-control")}}
+                        <small id="emailHelpId" class="form-text text-muted">Please enter room name</small>
+                    </div>
+                    <div class="mb-3">
+                        {{create_room_form.submit(class='btn btn-primary')}}
+                    </div>
+                </form>
+            </div>
+            <div class="container d-flex min-vh-100 flex-column bg-light pt-3">
+                <div class="row w-auto mx-3 justify-content-center overflow-auto" id="messages" style="max-height: 800px;">
+                    {% if room_msg %}
+                        {% for msg in room_msg %}
+                            <h5>
+                                {{msg.sender}}
+                            </h5>
+                            <div class="mb-2 border p-4 container">
+                                {{msg.message}}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="row w-100 mt-auto align-self-end">
+                    <div class="mb-3 form-group">
+                        {{send_msg_form.msg(class='form-control', placeholder='Aa', autocomplete="off", id='inputMessage')}}
+                    </div>
+                    <div class="mb-3 form-group">
+                        {{send_msg_form.send(class='btn btn-primary', id='send')}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
