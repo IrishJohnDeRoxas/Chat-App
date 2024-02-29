@@ -6,7 +6,6 @@ from models import db, migrate, UserModel, RoomMsgModel
 from routes import main, cache
 import os, functools
 
-
 load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
