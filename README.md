@@ -9,6 +9,10 @@ You can install this package as usual with pip:
 
     pip install requirements.txt
 
+Set up the database by running the sql file in Mysql Workbench:
+
+    Run the flask_chat_app.sql to create the database
+
 Example
 -------
 
